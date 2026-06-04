@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;        /* slate-50 HSL */
+    --foreground: 222 47% 11%;        /* slate-900 HSL */
+    --card: 0 0% 100%;                /* white HSL */
+    --card-foreground: 222 47% 11%;
+    --primary: 243 75% 59%;           /* indigo-600 HSL - vibrant & high contrast */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 83% 58%;         /* violet-600 HSL */
+    --accent: 189 94% 43%;            /* cyan-500 HSL */
+    --success: 162 76% 41%;           /* emerald-600 HSL - high contrast success */
+    --warning: 32 95% 44%;            /* amber-600 HSL - high contrast warning */
+    --danger: 347 77% 50%;            /* rose-600 HSL - high contrast danger */
+    --muted: 215 16% 47%;             /* slate-500 HSL */
+    --border: 214 32% 91%;            /* slate-200 HSL */
+    --ring: 243 75% 59%;
+    --radius: 0.75rem;
+    --sidebar-bg: 222 47% 11%;        /* slate-900 HSL */
+    --sidebar-fg: 210 40% 96%;
+    --sidebar-active: 243 75% 59%;
+    --sidebar-hover: rgba(99, 102, 241, 0.12);
+  }
+
+  .dark {
+    --background: 240 12% 7%;         /* very dark slate HSL */
+    --foreground: 210 40% 96%;        /* slate-100 HSL */
+    --card: 240 10% 12%;              /* dark card surface HSL */
+    --card-foreground: 210 40% 96%;
+    --primary: 243 85% 68%;           /* indigo-400 HSL - bright Indigo for dark mode */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 262 83% 68%;
+    --accent: 189 94% 53%;
+    --success: 160 84% 49%;
+    --warning: 38 92% 58%;
+    --danger: 350 89% 68%;
+    --border: 240 15% 21%;            /* dark border HSL */
+    --muted: 215 20% 65%;             /* slate-400 HSL */
+    --sidebar-bg: 240 12% 7%;
+    --sidebar-fg: 210 40% 96%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline: none !important;
+  }
+  
+  html {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground transition-colors duration-200 antialiased;
+  }
+
+  /* Selection style */
+  ::selection {
+    @apply bg-primary/20 text-primary;
+  }
+
+  /* Focus ring utility */
+  button:focus-visible, 
+  a:focus-visible, 
+  input:focus-visible, 
+  select:focus-visible, 
+  textarea:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Custom Thin Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors duration-150;
+}
+
+/* Transitions on interactive elements */
+a, button, input, select, textarea, svg {
+  @apply transition-all duration-150 ease-in-out;
+}
+
+/* Custom Utilities */
+.glassmorphism {
+  @apply bg-white/70 dark:bg-[#1a1a24]/70 backdrop-blur-md border border-white/20 dark:border-white/5;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
+}

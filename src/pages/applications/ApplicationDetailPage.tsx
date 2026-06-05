@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { 
   ArrowLeft, Edit, Trash2, Calendar, FileText, Bot, 
-  Clock, Mail, ExternalLink, MapPin, DollarSign, Flag, 
+  Clock, ExternalLink, MapPin, Flag, 
   AlertTriangle, Sparkles, MessageSquare, ChevronRight, Loader2
 } from "lucide-react"
 import { useApplications } from "../../hooks/useApplications"
@@ -22,7 +22,7 @@ export const ApplicationDetailPage: React.FC = () => {
   const queryClient = useQueryClient()
 
   // Hooks
-  const { getApplicationQuery, deleteApplication, updateApplication } = useApplications()
+  const { getApplicationQuery, deleteApplication } = useApplications()
   const { getApplicationRoundsQuery } = useInterviews()
 
   // Query states
@@ -30,10 +30,8 @@ export const ApplicationDetailPage: React.FC = () => {
   const { data: rounds } = getApplicationRoundsQuery(id || "")
 
   // Local state for tabs
-  const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "notes" | "ai" | "log">("overview")
+  const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "notes" | "ai" | "log" | "resume">("overview")
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [recruiterName, setRecruiterName] = useState("")
-  const [recruiterEmail, setRecruiterEmail] = useState("")
 
   // Notes state
   const [noteText, setNoteText] = useState("")
@@ -56,13 +54,7 @@ export const ApplicationDetailPage: React.FC = () => {
     placeholderData: () => demoNotes.filter((n) => n.applicationId === id),
   })
 
-  // Sync recruiter detail states
-  React.useEffect(() => {
-    if (application) {
-      setRecruiterName(application.recruiterName || "")
-      setRecruiterEmail(application.recruiterEmail || "")
-    }
-  }, [application])
+
 
   if (isLoading) {
     return (
@@ -83,19 +75,7 @@ export const ApplicationDetailPage: React.FC = () => {
     )
   }
 
-  // Update recruiter contact details on blur
-  const handleUpdateContact = async () => {
-    if (recruiterName !== application.recruiterName || recruiterEmail !== application.recruiterEmail) {
-      try {
-        await updateApplication({
-          id: application.id,
-          data: { recruiterName, recruiterEmail }
-        })
-      } catch (err) {
-        toast.error("Failed to update contact info.")
-      }
-    }
-  }
+
 
   const handleDelete = async () => {
     await deleteApplication(application.id)
@@ -231,6 +211,7 @@ export const ApplicationDetailPage: React.FC = () => {
           <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto select-none">
             {[
               { id: "overview", label: "Overview", icon: FileText },
+              { id: "resume", label: "Resume PDF", icon: FileText },
               { id: "timeline", label: "Rounds Timeline", icon: Calendar },
               { id: "notes", label: "Quick Notes", icon: MessageSquare },
               { id: "ai", label: "AI Analysis", icon: Bot },
@@ -259,7 +240,7 @@ export const ApplicationDetailPage: React.FC = () => {
           <div className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm min-h-[300px]">
             {activeTab === "overview" && (
               <div className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" /> Date Logged
@@ -271,16 +252,6 @@ export const ApplicationDetailPage: React.FC = () => {
                       <MapPin className="w-3.5 h-3.5" /> Office Location
                     </span>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{application.location}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                      <DollarSign className="w-3.5 h-3.5" /> Salary Package
-                    </span>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      {application.salary 
-                        ? `${application.salary.min.toLocaleString()} - ${application.salary.max.toLocaleString()} ${application.salary.currency}`
-                        : "Not specified"}
-                    </p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide flex items-center gap-1">
@@ -318,6 +289,15 @@ export const ApplicationDetailPage: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {application.jdText && (
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Job Description Text</span>
+                    <div className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed bg-slate-50 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-150 dark:border-slate-850 whitespace-pre-wrap max-h-60 overflow-y-auto text-left">
+                      {application.jdText}
+                    </div>
+                  </div>
+                )}
 
                 <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Additional Notes</span>
@@ -518,6 +498,46 @@ export const ApplicationDetailPage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {activeTab === "resume" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b pb-3 mb-4">
+                  <h3 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
+                    Attached Resume PDF
+                  </h3>
+                  {application.resumePdf && (
+                    <a
+                      href={application.resumePdf}
+                      download={`${application.companyName}_Resume.pdf`}
+                      className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Download PDF <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+
+                {application.resumePdf ? (
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900/30">
+                    <iframe
+                      src={application.resumePdf}
+                      className="w-full h-[600px] border-none"
+                      title="Resume PDF"
+                    />
+                  </div>
+                ) : (
+                  <div className="py-16 text-center text-xs text-slate-400 font-semibold border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-3">
+                    <FileText className="w-10 h-10 text-slate-300 dark:text-slate-700 animate-pulse" />
+                    <span>No resume PDF uploaded for this application.</span>
+                    <button
+                      onClick={() => navigate(`/applications/${application.id}/edit`)}
+                      className="mt-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/95 transition cursor-pointer"
+                    >
+                      Upload Resume
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -547,36 +567,7 @@ export const ApplicationDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Recruiter Details Card */}
-          <div className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 text-left">
-            <h3 className="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-wider border-b pb-2 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-slate-400 shrink-0" /> Recruiter Contact
-            </h3>
-            <div className="space-y-3.5">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Recruiter Name</label>
-                <input
-                  value={recruiterName}
-                  onChange={(e) => setRecruiterName(e.target.value)}
-                  onBlur={handleUpdateContact}
-                  type="text"
-                  placeholder="e.g. Sneha Reddy"
-                  className="w-full mt-1 px-3 py-1.5 border border-slate-250 dark:border-slate-800 rounded-xl text-xs bg-transparent text-slate-800 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Email Address</label>
-                <input
-                  value={recruiterEmail}
-                  onChange={(e) => setRecruiterEmail(e.target.value)}
-                  onBlur={handleUpdateContact}
-                  type="text"
-                  placeholder="e.g. sneha@google.com"
-                  className="w-full mt-1 px-3 py-1.5 border border-slate-250 dark:border-slate-800 rounded-xl text-xs bg-transparent text-slate-800 dark:text-white"
-                />
-              </div>
-            </div>
-          </div>
+
         </div>
 
       </div>

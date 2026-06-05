@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { 
   Zap, ChevronLeft, ChevronRight, BarChart2, Briefcase, Calendar, FileText, 
   Sparkles, Bot, Mic, TrendingUp, Target, CheckSquare, 
-  Building2, Search, User, Bell, CreditCard, LogOut 
+  User, Bell, CreditCard, LogOut 
 } from "lucide-react"
 import { SidebarContext } from "../../context/SidebarContext"
 import { useAuth } from "../../hooks/useAuth"
@@ -65,9 +65,7 @@ export const Sidebar: React.FC = () => {
       items: [
         { name: "Analytics", path: "/analytics", icon: TrendingUp },
         { name: "Goals", path: "/goals", icon: Target },
-        { name: "Tasks", path: "/tasks", icon: CheckSquare, badge: 6 }, // mockup task counts
-        { name: "Company Insights", path: "/company-insights", icon: Building2 },
-        { name: "Job Search", path: "/job-search", icon: Search }
+        { name: "Tasks", path: "/tasks", icon: CheckSquare, badge: 6 } // mockup task counts
       ]
     },
     {

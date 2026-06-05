@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { 
   Plus, Sparkles, Briefcase, Calendar, CheckSquare, FileUp, 
-  Building2, UserCheck, XCircle, ChevronRight, Target, Bot
+  UserCheck, XCircle, ChevronRight, Target, Bot
 } from "lucide-react"
 import { 
   ComposedChart, Bar, Line, Area, XAxis, YAxis, CartesianGrid, 
@@ -62,13 +62,6 @@ export const DashboardPage: React.FC = () => {
       action: () => navigate("/ai-mock-interview")
     },
     {
-      type: "tip",
-      border: "border-blue-500/20 bg-blue-50/5 dark:bg-blue-950/5",
-      text: "Stripe and Razorpay are actively looking for SDE-2 Backend profiles matching your Node.js and Redis stack.",
-      actionLabel: "Search Job Hub →",
-      action: () => navigate("/job-search")
-    },
-    {
       type: "win",
       border: "border-emerald-500/20 bg-emerald-50/5 dark:bg-emerald-950/5",
       text: "Resume intelligence score increased to 84/100 after adding Docker and Microservices tags.",
@@ -93,7 +86,7 @@ export const DashboardPage: React.FC = () => {
     { label: "AI Mock Prep", icon: Sparkles, action: () => navigate("/ai-mock-interview") },
     { label: "Upload CV", icon: FileUp, action: () => navigate("/resume-intelligence") },
     { label: "Update Goals", icon: Target, action: () => navigate("/goals") },
-    { label: "Research Companies", icon: Building2, action: () => navigate("/company-insights") }
+    { label: "View Tasks", icon: CheckSquare, action: () => navigate("/tasks") }
   ]
 
   return (
@@ -129,7 +122,7 @@ export const DashboardPage: React.FC = () => {
       {/* SECTION 2: 6 KPI Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatsCard
-          title="Total Apps"
+          title="Total Application"
           value={34}
           icon={Briefcase}
           iconBg="text-indigo-500 bg-indigo-500/10"

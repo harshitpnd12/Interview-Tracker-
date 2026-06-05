@@ -36,6 +36,8 @@ export interface Application {
   nextFollowUp?: string
   resumeUsed?: string
   jobDescriptionUrl?: string
+  resumePdf?: string
+  jdText?: string
 }
 
 export interface InterviewRound {

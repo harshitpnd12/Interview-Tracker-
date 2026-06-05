@@ -37,9 +37,7 @@ import AnalyticsPage from "./pages/analytics/AnalyticsPage"
 import GoalsPage from "./pages/goals/GoalsPage"
 import TasksPage from "./pages/tasks/TasksPage"
 
-import CompanyInsightsPage from "./pages/companies/CompanyInsightsPage"
-import CompanyProfilePage from "./pages/companies/CompanyProfilePage"
-import JobSearchPage from "./pages/jobs/JobSearchPage"
+
 import NotificationsPage from "./pages/notifications/NotificationsPage"
 
 import ProfilePage from "./pages/profile/ProfilePage"
@@ -120,9 +118,7 @@ const router = createBrowserRouter([
       { path: "analytics", element: <PageWrapper><AnalyticsPage /></PageWrapper> },
       { path: "goals", element: <PageWrapper><GoalsPage /></PageWrapper> },
       { path: "tasks", element: <PageWrapper><TasksPage /></PageWrapper> },
-      { path: "company-insights", element: <PageWrapper><CompanyInsightsPage /></PageWrapper> },
-      { path: "company-insights/:id", element: <PageWrapper><CompanyProfilePage /></PageWrapper> },
-      { path: "job-search", element: <PageWrapper><JobSearchPage /></PageWrapper> },
+
       { path: "notifications", element: <PageWrapper><NotificationsPage /></PageWrapper> },
       { path: "profile", element: <PageWrapper><ProfilePage /></PageWrapper> },
       { path: "settings", element: <PageWrapper><SettingsPage /></PageWrapper> },

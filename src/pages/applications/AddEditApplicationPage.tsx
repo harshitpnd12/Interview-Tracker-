@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as zod from "zod"
-import { Briefcase, ArrowLeft, Loader2, X } from "lucide-react"
+import { Briefcase, ArrowLeft, Loader2, X, FileText, Upload } from "lucide-react"
 import { useApplications } from "../../hooks/useApplications"
 import PageHeader from "../../components/shared/PageHeader"
 import { toast } from "sonner"
@@ -20,14 +20,10 @@ const applicationFormSchema = zod.object({
   priority: zod.enum(["high", "medium", "low"]),
   appliedDate: zod.string().min(1, "Applied Date is required"),
   source: zod.enum(["linkedin", "naukri", "company-site", "referral", "other"]),
-  salaryMin: zod.number().optional().or(zod.nan()),
-  salaryMax: zod.number().optional().or(zod.nan()),
-  currency: zod.string().default("INR"),
   jobDescriptionUrl: zod.string().url("Must be a valid URL").or(zod.literal("")),
   notes: zod.string().optional(),
-  recruiterName: zod.string().optional(),
-  recruiterEmail: zod.string().email("Invalid email format").or(zod.literal("")),
   nextFollowUp: zod.string().optional(),
+  jdText: zod.string().optional(),
 })
 
 type ApplicationFormInputs = zod.infer<typeof applicationFormSchema>
@@ -42,6 +38,10 @@ export const AddEditApplicationPage: React.FC = () => {
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState("")
 
+  // PDF upload state
+  const [resumePdfBase64, setResumePdfBase64] = useState<string>("")
+  const [pdfFileName, setPdfFileName] = useState<string>("")
+
   // Form setup
   const {
     register,
@@ -55,9 +55,8 @@ export const AddEditApplicationPage: React.FC = () => {
       status: "applied",
       priority: "medium",
       source: "linkedin",
-      currency: "INR",
       jobDescriptionUrl: "",
-      recruiterEmail: "",
+      jdText: "",
     },
   })
 
@@ -75,16 +74,14 @@ export const AddEditApplicationPage: React.FC = () => {
         priority: existingApp.priority,
         appliedDate: existingApp.appliedDate,
         source: existingApp.source,
-        salaryMin: existingApp.salary?.min ?? undefined,
-        salaryMax: existingApp.salary?.max ?? undefined,
-        currency: existingApp.salary?.currency ?? "INR",
         jobDescriptionUrl: existingApp.jobDescriptionUrl ?? "",
         notes: existingApp.notes ?? "",
-        recruiterName: existingApp.recruiterName ?? "",
-        recruiterEmail: existingApp.recruiterEmail ?? "",
         nextFollowUp: existingApp.nextFollowUp ?? "",
+        jdText: existingApp.jdText ?? "",
       })
       setTags(existingApp.tags ?? [])
+      setResumePdfBase64(existingApp.resumePdf ?? "")
+      setPdfFileName(existingApp.resumePdf ? "attached_resume.pdf" : "")
     }
   }, [existingApp, isEditMode, reset])
 
@@ -103,6 +100,33 @@ export const AddEditApplicationPage: React.FC = () => {
     setTags(tags.filter((_, idx) => idx !== index))
   }
 
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a PDF file only.")
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB.")
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string
+      setResumePdfBase64(base64String)
+      setPdfFileName(file.name)
+      toast.success("PDF uploaded successfully!")
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemovePdf = () => {
+    setResumePdfBase64("")
+    setPdfFileName("")
+    toast.success("Resume PDF removed.")
+  }
+
   const onSubmit = async (data: ApplicationFormInputs) => {
     const formattedData: Omit<Application, "id"> = {
       companyName: data.companyName,
@@ -115,18 +139,10 @@ export const AddEditApplicationPage: React.FC = () => {
       source: data.source,
       tags: tags,
       notes: data.notes,
-      recruiterName: data.recruiterName,
-      recruiterEmail: data.recruiterEmail || undefined,
       nextFollowUp: data.nextFollowUp || undefined,
       jobDescriptionUrl: data.jobDescriptionUrl || undefined,
-      salary: 
-        !isNaN(Number(data.salaryMin)) || !isNaN(Number(data.salaryMax))
-          ? {
-              min: Number(data.salaryMin) || 0,
-              max: Number(data.salaryMax) || 0,
-              currency: data.currency,
-            }
-          : undefined,
+      jdText: data.jdText || undefined,
+      resumePdf: resumePdfBase64 || undefined,
     }
 
     try {
@@ -254,42 +270,16 @@ export const AddEditApplicationPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Salary Min
-              </label>
-              <input
-                {...register("salaryMin", { valueAsNumber: true })}
-                type="number"
-                placeholder="Min Salary"
-                className="w-full mt-1.5 px-4 py-2 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Salary Max
-              </label>
-              <input
-                {...register("salaryMax", { valueAsNumber: true })}
-                type="number"
-                placeholder="Max Salary"
-                className="w-full mt-1.5 px-4 py-2 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Currency
-              </label>
-              <select
-                {...register("currency")}
-                className="w-full mt-1.5 px-3 py-2 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-white dark:bg-card text-slate-800 dark:text-white"
-              >
-                <option value="INR">INR (₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              Job Description Text
+            </label>
+            <textarea
+              {...register("jdText")}
+              rows={5}
+              placeholder="Paste the job description text here..."
+              className="w-full mt-1.5 px-4 py-2.5 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent focus:ring-1 focus:ring-primary focus:outline-none"
+            />
           </div>
 
           <div>
@@ -363,35 +353,7 @@ export const AddEditApplicationPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Recruiter Name
-              </label>
-              <input
-                {...register("recruiterName")}
-                type="text"
-                placeholder="Sneha Reddy"
-                className="w-full mt-1.5 px-4 py-2 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Recruiter Email
-              </label>
-              <input
-                {...register("recruiterEmail")}
-                type="text"
-                placeholder="recruiter@company.com"
-                className="w-full mt-1.5 px-4 py-2 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent"
-              />
-              {errors.recruiterEmail && (
-                <span className="text-[10px] text-danger font-semibold mt-1 block">
-                  {errors.recruiterEmail.message}
-                </span>
-              )}
-            </div>
-          </div>
+
         </div>
 
         {/* SECTION 4: Status & Priority */}
@@ -491,6 +453,61 @@ export const AddEditApplicationPage: React.FC = () => {
               placeholder="Record any details about company research, conversation notes, or salary expectations..."
               className="w-full mt-1.5 px-4 py-2.5 border border-slate-250 dark:border-slate-800 rounded-xl text-sm bg-transparent focus:ring-1 focus:ring-primary focus:outline-none"
             />
+          </div>
+        </div>
+
+        {/* SECTION 6: Resume Attachment */}
+        <div className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4 text-left">
+          <h3 className="text-sm font-extrabold text-slate-800 dark:text-white border-b pb-2">
+            Section 6 — Resume Attachment
+          </h3>
+          
+          <div className="space-y-4">
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              Upload Resume (PDF only, max 2MB)
+            </label>
+            
+            {resumePdfBase64 ? (
+              <div className="p-4 bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 bg-indigo-500/10 text-primary rounded-xl shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <span className="text-xs font-bold truncate block">{pdfFileName || "attached_resume.pdf"}</span>
+                    <span className="text-[9px] text-slate-450 font-semibold block mt-0.5">PDF Ready for Saving</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemovePdf}
+                  className="p-1 hover:text-danger text-slate-400 transition cursor-pointer"
+                  title="Remove PDF"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 rounded-2xl p-6 hover:bg-slate-50/30 dark:hover:bg-slate-900/5 transition text-center cursor-pointer relative">
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePdfUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800 dark:text-white">
+                    Click or drag PDF resume here
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Support PDF files up to 2MB
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

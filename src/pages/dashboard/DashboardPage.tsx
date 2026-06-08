@@ -122,7 +122,7 @@ export const DashboardPage: React.FC = () => {
       {/* SECTION 2: 6 KPI Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatsCard
-          title="Total Application"
+          title="Total Job Application"
           value={34}
           icon={Briefcase}
           iconBg="text-indigo-500 bg-indigo-500/10"

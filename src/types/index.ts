@@ -3,7 +3,7 @@ export interface User {
   name: string
   email: string
   avatar?: string | null
-  plan: "free" | "pro" | "enterprise"
+  plan: "free" | "pro" | "prime" | "custom" | "enterprise"
   role: "user" | "admin"
   joinDate: string
   targetRole?: string
@@ -14,6 +14,8 @@ export interface User {
   github?: string
   portfolio?: string
   bio?: string
+  tokensUsed?: number
+  tokensTotal?: number
 }
 
 export interface Application {
@@ -25,6 +27,7 @@ export interface Application {
   jobType: "full-time" | "part-time" | "internship" | "contract"
   status: "applied" | "under-review" | "phone-screen" | "technical" 
           | "hr-round" | "final-round" | "offer" | "rejected" | "withdrawn"
+          | "aptitude" | "correspond"
   priority: "high" | "medium" | "low"
   appliedDate: string
   salary?: { min: number; max: number; currency: string }

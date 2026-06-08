@@ -82,6 +82,8 @@ export const ApplicationsPage: React.FC = () => {
     offer: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400" },
     rejected: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-400 line-through" },
     withdrawn: { bg: "bg-gray-105 dark:bg-slate-800", text: "text-slate-500" },
+    aptitude: { bg: "bg-sky-100 dark:bg-sky-900/30", text: "text-sky-700 dark:text-sky-400" },
+    correspond: { bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-400" },
   }
 
   const priorityColors = {
@@ -94,7 +96,7 @@ export const ApplicationsPage: React.FC = () => {
   const kanbanColumns = [
     { key: "applied", label: "Applied", color: "border-t-slate-400" },
     { key: "under-review", label: "Under Review", color: "border-t-amber-500" },
-    { key: "interview-stage", label: "Interviews", color: "border-t-violet-500", statuses: ["phone-screen", "technical", "hr-round", "final-round"] },
+    { key: "interview-stage", label: "Interviews", color: "border-t-violet-500", statuses: ["phone-screen", "technical", "hr-round", "final-round", "aptitude", "correspond"] },
     { key: "offer", label: "Offers", color: "border-t-emerald-500" },
     { key: "rejected", label: "Archive", color: "border-t-rose-400", statuses: ["rejected", "withdrawn"] },
   ]
@@ -291,6 +293,8 @@ export const ApplicationsPage: React.FC = () => {
                 <option value="">Move Status</option>
                 <option value="applied">Applied</option>
                 <option value="under-review">Under Review</option>
+                <option value="aptitude">Aptitude Test</option>
+                <option value="correspond">Correspondence</option>
                 <option value="technical">Technical</option>
                 <option value="offer">Offer</option>
                 <option value="rejected">Rejected</option>

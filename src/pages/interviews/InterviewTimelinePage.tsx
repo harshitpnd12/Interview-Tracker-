@@ -14,7 +14,7 @@ export const InterviewTimelinePage: React.FC = () => {
   // Find applications with interview rounds
   const appsWithInterviews = React.useMemo(() => {
     return applications
-      .filter((app) => ["technical", "under-review", "phone-screen", "hr-round", "final-round", "offer"].includes(app.status))
+      .filter((app) => ["technical", "under-review", "phone-screen", "hr-round", "final-round", "offer", "aptitude", "correspond"].includes(app.status))
       .map((app) => {
         const appRounds = allInterviews.filter((r) => r.applicationId === app.id)
         const completedRounds = appRounds.filter((r) => r.status === "completed").length

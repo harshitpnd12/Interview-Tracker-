@@ -26,7 +26,7 @@ export const AdminSubscriptionsPage: React.FC = () => {
                 <span className="text-slate-850 dark:text-white font-bold block">{sub.name}</span>
                 <span className="text-slate-400 mt-0.5 block">{sub.email}</span>
               </div>
-              <Badge variant={sub.type === "enterprise" ? "success" : "primary"}>
+              <Badge variant={sub.type === "enterprise" || sub.type === "custom" ? "success" : sub.type === "prime" ? "warning" : "primary"}>
                 {sub.type} Plan
               </Badge>
               <Badge variant="success">Active</Badge>

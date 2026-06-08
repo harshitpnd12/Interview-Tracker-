@@ -27,7 +27,7 @@ export const AdminUsersPage: React.FC = () => {
                 <span className="text-slate-400 mt-0.5 block">{u.email}</span>
               </div>
               <Badge variant={u.role === "admin" ? "danger" : "outline"}>{u.role}</Badge>
-              <Badge variant={u.plan === "pro" ? "primary" : u.plan === "enterprise" ? "success" : "muted"}>
+              <Badge variant={u.plan === "pro" ? "primary" : u.plan === "prime" ? "success" : u.plan === "enterprise" || u.plan === "custom" ? "warning" : "muted"}>
                 {u.plan}
               </Badge>
               <span>Joined: {u.date}</span>

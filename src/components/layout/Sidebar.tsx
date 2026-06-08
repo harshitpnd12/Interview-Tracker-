@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { 
   Zap, ChevronLeft, ChevronRight, BarChart2, Briefcase, Calendar, FileText, 
   Sparkles, Bot, Mic, TrendingUp, Target, CheckSquare, 
-  User, Bell, CreditCard, LogOut 
+  User, Bell, CreditCard, LogOut, Gift 
 } from "lucide-react"
 import { SidebarContext } from "../../context/SidebarContext"
 import { useAuth } from "../../hooks/useAuth"
@@ -41,6 +41,15 @@ export const Sidebar: React.FC = () => {
     (a) => !["rejected", "withdrawn", "offer"].includes(a.status)
   ).length
 
+  // Get active tokens or fallbacks depending on plan
+  const plan = user?.plan || "pro"
+  const tokensUsed = user?.tokensUsed ?? (plan === "free" ? 2 : plan === "pro" ? 42 : plan === "prime" ? 185 : plan === "custom" ? 240 : 42)
+  const tokensTotal = user?.tokensTotal ?? (plan === "free" ? 5 : plan === "pro" ? 100 : plan === "prime" ? 99999 : plan === "custom" ? 1000 : 100)
+  const isUnlimited = plan === "prime"
+  
+  const tokenPercent = isUnlimited ? 100 : Math.min(100, Math.round((tokensUsed / tokensTotal) * 100))
+  const tokensLeft = isUnlimited ? "Unlimited" : tokensTotal - tokensUsed
+
   const navigationGroups: SidebarGroup[] = [
     {
       label: "Main",
@@ -73,6 +82,7 @@ export const Sidebar: React.FC = () => {
       items: [
         { name: "Profile", path: "/profile", icon: User },
         { name: "Notifications", path: "/notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
+        { name: "Refer & Earn", path: "/referrals", icon: Gift },
         { name: "Billing", path: "/billing", icon: CreditCard }
       ]
     }
@@ -178,6 +188,42 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom Profile Section */}
       <div className="border-t border-slate-800 p-4 shrink-0 bg-slate-900/60 backdrop-blur-sm">
+        {/* AI Tokens Usage Card */}
+        {!isCollapsed && (
+          <div className="mb-4 bg-slate-950/40 border border-slate-850 rounded-xl p-3 text-left">
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className="text-slate-400 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-violet-400" />
+                AI Prep Tokens
+              </span>
+              <span className="text-white">
+                {isUnlimited ? "Unlimited" : `${tokensUsed}/${tokensTotal}`}
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mt-2">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  isUnlimited ? "bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 animate-pulse" : "bg-indigo-500"
+                )}
+                style={{ width: `${tokenPercent}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-[9px] text-slate-500 font-semibold">
+                {isUnlimited ? "Active Prime Plan" : `${tokensLeft} tokens left`}
+              </span>
+              {!isUnlimited && (
+                <NavLink
+                  to="/billing/upgrade"
+                  className="text-[9px] font-extrabold text-indigo-400 hover:text-indigo-305 transition"
+                >
+                  Upgrade →
+                </NavLink>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-10 h-10 rounded-full bg-indigo-600 border border-slate-700 flex items-center justify-center font-bold text-white shrink-0 text-sm">

@@ -41,7 +41,7 @@ export const AdminDashboardPage: React.FC = () => {
           value="456"
           icon={TrendingUp}
           iconBg="text-cyan-500 bg-cyan-500/10"
-          subText="Pro & Enterprise"
+          subText="Pro, Prime & Custom"
         />
         <StatsCard
           title="Reports Generated"
@@ -63,7 +63,7 @@ export const AdminDashboardPage: React.FC = () => {
                 <span className="text-slate-850 dark:text-white font-bold block">{u.name}</span>
                 <span className="text-slate-400 mt-0.5 block">{u.email}</span>
               </div>
-              <Badge variant={u.plan === "pro" ? "primary" : u.plan === "enterprise" ? "success" : "muted"}>
+              <Badge variant={u.plan === "pro" ? "primary" : u.plan === "prime" ? "success" : u.plan === "enterprise" || u.plan === "custom" ? "warning" : "muted"}>
                 {u.plan}
               </Badge>
               <span>{u.joined}</span>

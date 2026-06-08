@@ -44,6 +44,7 @@ import ProfilePage from "./pages/profile/ProfilePage"
 import SettingsPage from "./pages/profile/SettingsPage"
 import BillingPage from "./pages/billing/BillingPage"
 import UpgradePage from "./pages/billing/UpgradePage"
+import ReferralPage from "./pages/referrals/ReferralPage"
 
 // Admin Pages
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
@@ -123,7 +124,8 @@ const router = createBrowserRouter([
       { path: "profile", element: <PageWrapper><ProfilePage /></PageWrapper> },
       { path: "settings", element: <PageWrapper><SettingsPage /></PageWrapper> },
       { path: "billing", element: <PageWrapper><BillingPage /></PageWrapper> },
-      { path: "billing/upgrade", element: <PageWrapper><UpgradePage /></PageWrapper> }
+      { path: "billing/upgrade", element: <PageWrapper><UpgradePage /></PageWrapper> },
+      { path: "referrals", element: <PageWrapper><ReferralPage /></PageWrapper> }
     ]
   },
 

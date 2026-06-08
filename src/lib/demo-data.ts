@@ -14,7 +14,9 @@ export const demoUser: User = {
   linkedin: "linkedin.com/in/arjunsharma",
   github: "github.com/arjunsharma",
   bio: "Backend engineer targeting SDE-2 roles at product companies.",
-  avatar: null
+  avatar: null,
+  tokensUsed: 42,
+  tokensTotal: 100
 }
 
 export const demoApplications: Application[] = [

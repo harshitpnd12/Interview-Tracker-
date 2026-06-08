@@ -15,7 +15,7 @@ const applicationFormSchema = zod.object({
   location: zod.string().min(1, "Location is required"),
   jobType: zod.enum(["full-time", "part-time", "internship", "contract"]),
   status: zod.enum(
-    ["applied", "under-review", "phone-screen", "technical", "hr-round", "final-round", "offer", "rejected", "withdrawn"]
+    ["applied", "under-review", "phone-screen", "technical", "hr-round", "final-round", "offer", "rejected", "withdrawn", "aptitude", "correspond"]
   ),
   priority: zod.enum(["high", "medium", "low"]),
   appliedDate: zod.string().min(1, "Applied Date is required"),
@@ -372,6 +372,8 @@ export const AddEditApplicationPage: React.FC = () => {
               >
                 <option value="applied">Applied</option>
                 <option value="under-review">Under Review</option>
+                <option value="aptitude">Aptitude Test</option>
+                <option value="correspond">Correspondence</option>
                 <option value="phone-screen">Phone Screen</option>
                 <option value="technical">Technical Round</option>
                 <option value="hr-round">HR / Googliness Round</option>

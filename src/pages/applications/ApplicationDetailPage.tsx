@@ -149,6 +149,8 @@ export const ApplicationDetailPage: React.FC = () => {
     offer: "bg-emerald-100 text-emerald-700",
     rejected: "bg-rose-100 text-rose-700 line-through",
     withdrawn: "bg-gray-105 text-slate-500",
+    aptitude: "bg-sky-100 text-sky-700",
+    correspond: "bg-teal-100 text-teal-700",
   }
 
   return (

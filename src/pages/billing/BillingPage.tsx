@@ -3,14 +3,28 @@ import { useNavigate } from "react-router-dom"
 import { CreditCard, Receipt, ChevronRight } from "lucide-react"
 import PageHeader from "../../components/shared/PageHeader"
 import Badge from "../../components/shared/Badge"
+import { useAuth } from "../../hooks/useAuth"
 
 export const BillingPage: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const plan = user?.plan || "free"
+
+  const planDetails: Record<string, { name: string; price: string; desc: string; variant: "success" | "primary" | "warning" | "muted" }> = {
+    free: { name: "Free Plan", price: "$0.00 / month", desc: "Basic job application tracking & limited AI mock prep (5 tokens total).", variant: "muted" },
+    pro: { name: "Pro Plan", price: "$19.00 / month", desc: "Unlimited tracking, 100 AI prep tokens, speech feedback & diagnostics.", variant: "primary" },
+    prime: { name: "Prime Plan", price: "$39.00 / month", desc: "Unlimited tracking, unlimited AI prep tokens, priority 1-on-1 resume reviews.", variant: "success" },
+    custom: { name: "Custom Plan", price: "Custom Pricing", desc: "For university cohorts & teams, custom SLAs & dedicated onboarding.", variant: "warning" },
+    enterprise: { name: "Enterprise Plan", price: "Custom Pricing", desc: "Enterprise support.", variant: "warning" }
+  }
+
+  const activePlan = planDetails[plan] || planDetails.free
 
   const history = [
-    { invoice: "INV-8219", date: "2025-05-15", amount: "$29.00", status: "paid" },
-    { invoice: "INV-7291", date: "2025-04-15", amount: "$29.00", status: "paid" },
-    { invoice: "INV-6182", date: "2025-03-15", amount: "$29.00", status: "paid" },
+    { invoice: "INV-8219", date: "2025-05-15", amount: "$19.00", status: "paid" },
+    { invoice: "INV-7291", date: "2025-04-15", amount: "$19.00", status: "paid" },
+    { invoice: "INV-6182", date: "2025-03-15", amount: "$19.00", status: "paid" },
   ]
 
   return (
@@ -27,13 +41,18 @@ export const BillingPage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between border-b pb-3 mb-4">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Plan</span>
-              <Badge variant="success">Pro Plan</Badge>
+              <Badge variant={activePlan.variant}>{activePlan.name}</Badge>
             </div>
             
-            <h3 className="text-xl font-black text-slate-850 dark:text-white">$29.00 / month</h3>
+            <h3 className="text-xl font-black text-slate-850 dark:text-white">{activePlan.price}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-              Your subscription will automatically renew on June 15, 2025 using card ending in 4242.
+              {activePlan.desc}
             </p>
+            {plan !== "free" && plan !== "custom" && (
+              <p className="text-[10px] text-slate-400 mt-3 font-semibold">
+                Your subscription will automatically renew next month.
+              </p>
+            )}
           </div>
 
           <button

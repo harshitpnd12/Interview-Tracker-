@@ -24,14 +24,29 @@ export const ApplicationsPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string[]>([])
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
+  const [dateFrom, setDateFrom] = useState("")
+  const [dateTo, setDateTo] = useState("")
   const [deleteAppId, setDeleteAppId] = useState<string | null>(null)
   
+  // Sorting: default sort is based on date (appliedDate) descending (newest first)
+  const [sortField, setSortField] = useState<keyof Application>("appliedDate")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const handleToggleView = (mode: "table" | "kanban") => {
     setViewMode(mode)
     localStorage.setItem("iq_apps_view", mode)
+  }
+
+  const handleSort = (field: keyof Application) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+    } else {
+      setSortField(field)
+      setSortDirection(field === "appliedDate" ? "desc" : "asc")
+    }
   }
 
   // Filter application data
@@ -45,9 +60,40 @@ export const ApplicationsPage: React.FC = () => {
       const matchStatus = statusFilter.length === 0 || statusFilter.includes(app.status)
       const matchPriority = priorityFilter.length === 0 || priorityFilter.includes(app.priority)
 
-      return matchSearch && matchStatus && matchPriority
+      const appDateVal = new Date(app.appliedDate).getTime()
+      const matchDateFrom = !dateFrom || appDateVal >= new Date(dateFrom).getTime()
+      const matchDateTo = !dateTo || appDateVal <= new Date(dateTo).getTime()
+
+      return matchSearch && matchStatus && matchPriority && matchDateFrom && matchDateTo
     })
-  }, [applications, searchQuery, statusFilter, priorityFilter])
+  }, [applications, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo])
+
+  // Sorted and filtered applications
+  const sortedAndFilteredApps = useMemo(() => {
+    const list = [...filteredApps]
+    list.sort((a, b) => {
+      if (sortField === "priority") {
+        const weights = { high: 3, medium: 2, low: 1 }
+        const wA = weights[a.priority] || 0
+        const wB = weights[b.priority] || 0
+        return sortDirection === "asc" ? wA - wB : wB - wA
+      }
+
+      const aVal = a[sortField] ?? ""
+      const bVal = b[sortField] ?? ""
+      
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortDirection === "asc" 
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal)
+      }
+      
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1
+      return 0
+    })
+    return list
+  }, [filteredApps, sortField, sortDirection])
 
   // Delete handlers
   const handleConfirmDelete = async () => {
@@ -100,6 +146,31 @@ export const ApplicationsPage: React.FC = () => {
     { key: "offer", label: "Offers", color: "border-t-emerald-500" },
     { key: "rejected", label: "Archive", color: "border-t-rose-400", statuses: ["rejected", "withdrawn"] },
   ]
+
+  const renderSortArrows = (field: keyof Application) => {
+    const isActive = sortField === field
+    const isAsc = sortDirection === "asc"
+    return (
+      <span className="inline-flex flex-col ml-1.5 align-middle select-none">
+        <span 
+          className={cn(
+            "text-[8px] leading-none transition-colors",
+            isActive && isAsc ? "text-primary font-black" : "text-slate-400/40 dark:text-slate-600/40"
+          )}
+        >
+          ▲
+        </span>
+        <span 
+          className={cn(
+            "text-[8px] leading-none transition-colors mt-[1px]",
+            isActive && !isAsc ? "text-primary font-black" : "text-slate-400/40 dark:text-slate-600/40"
+          )}
+        >
+          ▼
+        </span>
+      </span>
+    )
+  }
 
   return (
     <div className="space-y-6 select-none">
@@ -190,7 +261,7 @@ export const ApplicationsPage: React.FC = () => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-inner space-y-4"
           >
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest block mb-2">
                   Status Filters
@@ -249,6 +320,32 @@ export const ApplicationsPage: React.FC = () => {
                   })}
                 </div>
               </div>
+
+              <div>
+                <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest block mb-2">
+                  Applied Date Range
+                </span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 w-8">From:</span>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="px-3 py-1.5 border border-slate-250 dark:border-slate-800 rounded-xl text-xs bg-transparent text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 w-8">To:</span>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="px-3 py-1.5 border border-slate-250 dark:border-slate-800 rounded-xl text-xs bg-transparent text-slate-850 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary w-full"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -256,8 +353,10 @@ export const ApplicationsPage: React.FC = () => {
                 onClick={() => {
                   setStatusFilter([])
                   setPriorityFilter([])
+                  setDateFrom("")
+                  setDateTo("")
                 }}
-                className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-800 bg-transparent text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-850 cursor-pointer"
+                className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-800 bg-transparent text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-855 cursor-pointer"
               >
                 Clear All
               </button>
@@ -327,10 +426,10 @@ export const ApplicationsPage: React.FC = () => {
                 <th className="p-4 w-12 text-center">
                   <input
                     type="checkbox"
-                    checked={filteredApps.length > 0 && filteredApps.every((a) => selectedIds.includes(a.id))}
+                    checked={sortedAndFilteredApps.length > 0 && sortedAndFilteredApps.every((a) => selectedIds.includes(a.id))}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedIds(filteredApps.map((a) => a.id))
+                        setSelectedIds(sortedAndFilteredApps.map((a) => a.id))
                       } else {
                         setSelectedIds([])
                       }
@@ -338,24 +437,72 @@ export const ApplicationsPage: React.FC = () => {
                     className="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer"
                   />
                 </th>
-                <th className="p-4 text-sm font-semibold">Company</th>
-                <th className="p-4 text-sm font-semibold">Role</th>
-                <th className="p-4 text-sm font-semibold">Status</th>
-                <th className="p-4 text-sm font-semibold">Applied</th>
-                <th className="p-4 text-sm font-semibold">Priority</th>
-                <th className="p-4 text-sm font-semibold">Source</th>
-                <th className="p-4 text-sm font-semibold text-center">Actions</th>
+                <th 
+                  onClick={() => handleSort("companyName")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Company
+                    {renderSortArrows("companyName")}
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("jobTitle")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Role
+                    {renderSortArrows("jobTitle")}
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("status")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Status
+                    {renderSortArrows("status")}
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("appliedDate")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Applied
+                    {renderSortArrows("appliedDate")}
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("priority")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Priority
+                    {renderSortArrows("priority")}
+                  </div>
+                </th>
+                <th 
+                  onClick={() => handleSort("source")}
+                  className="p-4 text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 select-none transition-colors"
+                >
+                  <div className="flex items-center gap-1">
+                    Source
+                    {renderSortArrows("source")}
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-              {filteredApps.length === 0 ? (
+              {sortedAndFilteredApps.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-xs text-slate-400 font-semibold">
                     No applications match the filters.
                   </td>
                 </tr>
               ) : (
-                filteredApps.map((app) => {
+                sortedAndFilteredApps.map((app) => {
                   const isChecked = selectedIds.includes(app.id)
                   const stStyle = statusConfig[app.status] || { bg: "bg-slate-100", text: "text-slate-700" }
                   
@@ -453,10 +600,12 @@ export const ApplicationsPage: React.FC = () => {
               >
                 {/* Column Header */}
                 <div className={cn("pb-3 border-t-4 rounded-t-sm flex items-center justify-between mb-4", col.color)}>
-                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                     {col.label}
                   </h4>
-                  <Badge variant="muted">{colApps.length}</Badge>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300/60 dark:border-slate-700">
+                    {colApps.length}
+                  </span>
                 </div>
 
                 {/* Column Cards list */}

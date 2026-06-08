@@ -15,13 +15,12 @@ export const ReferralPage: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
   const [payoutEmail, setPayoutEmail] = useState("")
-  const [payoutRequested, setPayoutRequested] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
 
   // Interactive local states for referrals
   const [earnings, setEarnings] = useState(10.50) // e.g. 3 purchases @ $3.50
-  const [referredCount, setReferredCount] = useState(12)
-  const [purchasedCount, setPurchasedCount] = useState(3)
+  const [referredCount] = useState(12)
+  const [purchasedCount] = useState(3)
   const [payoutsList, setPayoutsList] = useState([
     { id: "po-1", date: "2026-05-10", amount: 7.00, method: "PayPal (arjun.sh***)", status: "Completed" }
   ])
@@ -73,7 +72,6 @@ export const ReferralPage: React.FC = () => {
     toast.success(`Payout request of $${earnings.toFixed(2)} submitted!`)
     setEarnings(0)
     setPayoutEmail("")
-    setPayoutRequested(true)
   }
 
   return (

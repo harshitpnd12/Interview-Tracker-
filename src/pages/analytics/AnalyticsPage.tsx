@@ -63,7 +63,7 @@ export const AnalyticsPage: React.FC = () => {
           </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={overviewData} layout="vertical" margin={{ left: -10, right: 10 }}>
+              <BarChart data={overviewData} layout="vertical" margin={{ left: 24, right: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} className="stroke-slate-100 dark:stroke-slate-800" />
                 <XAxis type="number" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />

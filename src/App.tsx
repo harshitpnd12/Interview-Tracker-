@@ -45,6 +45,10 @@ import SettingsPage from "./pages/profile/SettingsPage"
 import BillingPage from "./pages/billing/BillingPage"
 import UpgradePage from "./pages/billing/UpgradePage"
 import ReferralPage from "./pages/referrals/ReferralPage"
+import SplashCursor from "./components/shared/SplashCursor"
+import ContactSalesPage from "./pages/contact/ContactSalesPage"
+import SupportPage from "./pages/support/SupportPage"
+import { useTheme } from "./hooks/useTheme"
 
 // Admin Pages
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
@@ -74,7 +78,9 @@ const router = createBrowserRouter([
     path: "/",
     element: <MarketingLayout />,
     children: [
-      { index: true, element: <PageWrapper><LandingPage /></PageWrapper> }
+      { index: true, element: <PageWrapper><LandingPage /></PageWrapper> },
+      { path: "contact-sales", element: <PageWrapper><ContactSalesPage /></PageWrapper> },
+      { path: "help", element: <PageWrapper><SupportPage /></PageWrapper> }
     ]
   },
   
@@ -125,7 +131,9 @@ const router = createBrowserRouter([
       { path: "settings", element: <PageWrapper><SettingsPage /></PageWrapper> },
       { path: "billing", element: <PageWrapper><BillingPage /></PageWrapper> },
       { path: "billing/upgrade", element: <PageWrapper><UpgradePage /></PageWrapper> },
-      { path: "referrals", element: <PageWrapper><ReferralPage /></PageWrapper> }
+      { path: "referrals", element: <PageWrapper><ReferralPage /></PageWrapper> },
+      { path: "support", element: <PageWrapper><SupportPage /></PageWrapper> },
+      { path: "contact-sales", element: <PageWrapper><ContactSalesPage /></PageWrapper> }
     ]
   },
 
@@ -150,8 +158,23 @@ const router = createBrowserRouter([
 ])
 
 export const App: React.FC = () => {
+  const { theme } = useTheme()
+  const cursorColor = theme === "dark" ? "#A855F7" : "#6366F1"
+
   return (
     <AnimatePresence mode="wait">
+      <SplashCursor
+        DENSITY_DISSIPATION={3.5}
+        VELOCITY_DISSIPATION={2}
+        PRESSURE={0.1}
+        CURL={3}
+        SPLAT_RADIUS={0.2}
+        SPLAT_FORCE={6000}
+        COLOR_UPDATE_SPEED={10}
+        SHADING
+        RAINBOW_MODE={false}
+        COLOR={cursorColor}
+      />
       <RouterProvider router={router} />
     </AnimatePresence>
   )

@@ -5,6 +5,7 @@ import PageHeader from "../../components/shared/PageHeader"
 import { useAuth } from "../../hooks/useAuth"
 import { toast } from "sonner"
 import { cn } from "../../lib/utils"
+import { ContactSalesModal } from "../../components/shared/ContactSalesModal"
 
 export const UpgradePage: React.FC = () => {
   const navigate = useNavigate()
@@ -12,6 +13,9 @@ export const UpgradePage: React.FC = () => {
   
   // Billing cycle state: false = Monthly, true = Annually
   const [isAnnual, setIsAnnual] = useState(false)
+  
+  // Sales modal state
+  const [isSalesModalOpen, setIsSalesModalOpen] = useState(false)
 
   // Coupon states
   const [couponInput, setCouponInput] = useState("")
@@ -56,7 +60,7 @@ export const UpgradePage: React.FC = () => {
 
   const handleCheckout = (planKey: "free" | "pro" | "prime" | "custom", price: number | string) => {
     if (planKey === "custom") {
-      toast.success("Sales query received! An advisor will reach out to you within 24 hours.")
+      setIsSalesModalOpen(true)
       return
     }
 
@@ -259,12 +263,12 @@ export const UpgradePage: React.FC = () => {
           const basePrice = isAnnual ? p.annualPrice : p.monthlyPrice
           const isNumeric = typeof basePrice === "number"
 
-          let finalPrice = basePrice
+          let finalPriceNum = 0
           let discountVal = 0
 
           if (isNumeric && typeof basePrice === "number") {
             discountVal = Math.round(basePrice * (discountPercent / 100) * 100) / 100
-            finalPrice = basePrice - discountVal
+            finalPriceNum = basePrice - discountVal
           }
 
           const isCurrentPlan = user?.plan === p.key
@@ -291,7 +295,7 @@ export const UpgradePage: React.FC = () => {
                   {isNumeric ? (
                     <>
                       <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                        ${finalPrice.toFixed(2)}
+                        ${finalPriceNum.toFixed(2)}
                       </span>
                       <span className="text-slate-450 text-[10px] font-bold">/mo</span>
                     </>
@@ -305,7 +309,7 @@ export const UpgradePage: React.FC = () => {
                 {/* Show discount info */}
                 {appliedCoupon && isNumeric && discountVal > 0 && (
                   <div className="text-[10px] text-slate-400 mt-1.5 font-bold flex flex-col gap-0.5">
-                    <span className="line-through text-slate-400/80">Regular: ${basePrice.toFixed(2)}/mo</span>
+                    <span className="line-through text-slate-400/80">Regular: ${(basePrice as number).toFixed(2)}/mo</span>
                     <span className="text-emerald-500">Save ${discountVal.toFixed(2)}/mo with {appliedCoupon}</span>
                   </div>
                 )}
@@ -313,7 +317,7 @@ export const UpgradePage: React.FC = () => {
                 {/* Annual billing detail text */}
                 {isAnnual && isNumeric && (
                   <p className="text-[10px] text-slate-400 font-bold mt-1">
-                    Billed annually (${(finalPrice * 12).toFixed(2)}/yr)
+                    Billed annually (${(finalPriceNum * 12).toFixed(2)}/yr)
                   </p>
                 )}
 
@@ -331,7 +335,7 @@ export const UpgradePage: React.FC = () => {
 
               <button
                 disabled={isCurrentPlan && p.key !== "custom"}
-                onClick={() => handleCheckout(p.key as any, isNumeric ? (finalPrice * (isAnnual ? 12 : 1)).toFixed(2) : "Custom")}
+                onClick={() => handleCheckout(p.key as any, isNumeric ? (finalPriceNum * (isAnnual ? 12 : 1)).toFixed(2) : "Custom")}
                 className={cn(
                   "w-full text-center py-2.5 rounded-xl text-xs font-bold mt-6 transition cursor-pointer",
                   isCurrentPlan
@@ -347,6 +351,7 @@ export const UpgradePage: React.FC = () => {
           );
         })}
       </div>
+      <ContactSalesModal isOpen={isSalesModalOpen} onClose={() => setIsSalesModalOpen(false)} />
     </div>
   )
 }

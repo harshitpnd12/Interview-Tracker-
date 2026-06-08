@@ -2,6 +2,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Zap, Bot, Target, FileText, CheckCircle2, ArrowRight, Sparkles } from "lucide-react"
+import { ContactSalesModal } from "../../components/shared/ContactSalesModal"
 
 export const LandingPage: React.FC = () => {
   const features = [
@@ -31,16 +32,19 @@ export const LandingPage: React.FC = () => {
     }
   ]
 
+  const [isAnnual, setIsAnnual] = React.useState(false)
+  const [isSalesModalOpen, setIsSalesModalOpen] = React.useState(false)
+
   const pricing = [
     {
-      name: "Free Trial",
+      name: "Free Plan",
       price: "$0",
-      desc: "Perfect for students beginning their search.",
+      desc: "Essential tracking tools to organize your applications.",
       features: [
-        "1 AI Mock Interview / month",
-        "Basic resume parsing audit",
-        "Applications tracker board",
-        "Limited company insights"
+        "Up to 10 job applications",
+        "5 AI mock prep tokens total",
+        "Basic keyword matching audit",
+        "Timeline tracking view"
       ],
       cta: "Get Started",
       link: "/register",
@@ -48,36 +52,53 @@ export const LandingPage: React.FC = () => {
     },
     {
       name: "Pro Plan",
-      price: "$29",
+      price: isAnnual ? "$15" : "$19",
       period: "/mo",
-      desc: "Tailored for active job hunters targeting top tech.",
+      desc: "For active job seekers acing competitive tech rounds.",
       features: [
-        "Unlimited AI Mock Interviews",
+        "Unlimited job applications",
+        "100 AI prep tokens / month",
         "Advanced speech & code feedback",
-        "Automated rejection analysis reports",
-        "Full resume intelligence comparator",
-        "Premium company prep questions"
+        "Automated rejection audits",
+        "Custom resume keyword tailoring"
       ],
       cta: "Upgrade to Pro",
+      link: "/register",
+      popular: false
+    },
+    {
+      name: "Prime Plan",
+      price: isAnnual ? "$31" : "$39",
+      period: "/mo",
+      desc: "Ultimate features for acing L4/L5 engineering loops.",
+      features: [
+        "Everything in Pro",
+        "Unlimited AI prep tokens / month",
+        "1-on-1 resume optimization reviews",
+        "Premium company prep questions",
+        "Priority customer support"
+      ],
+      cta: "Go Prime",
       link: "/register",
       popular: true
     },
     {
-      name: "Enterprise",
+      name: "Custom Plan",
       price: "Custom",
-      desc: "For universities and career bootcamps.",
+      desc: "Enterprise grading features for colleges and bootcamps.",
       features: [
-        "Everything in Pro",
+        "Everything in Prime",
         "Batch student analytics dashboard",
         "Custom school branding integration",
         "SLA guaranteed mock review APIs",
         "Dedicated account manager support"
       ],
       cta: "Contact Sales",
-      link: "/register",
+      link: "/contact-sales",
       popular: false
     }
   ]
+
 
   return (
     <div className="bg-slate-50 dark:bg-[#0F0F13] min-h-screen text-slate-800 dark:text-slate-200 select-none">
@@ -171,23 +192,52 @@ export const LandingPage: React.FC = () => {
 
       {/* Pricing Cards */}
       <section className="max-w-7xl mx-auto px-6 py-20 border-t border-slate-200 dark:border-slate-800/60">
-        <div className="text-center max-w-lg mx-auto mb-16">
+        <div className="text-center max-w-lg mx-auto mb-10">
           <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
-            Transparent Pricing plans
+            Transparent Pricing Plans
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
             Choose a roadmap that aligns with your active application volume.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        {/* Toggle Monthly / Annual Billing */}
+        <div className="flex items-center justify-center gap-4 pt-4 mb-12">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-2xl">
+            <button
+              onClick={() => setIsAnnual(false)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                !isAnnual 
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" 
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Monthly Billing
+            </button>
+            <button
+              onClick={() => setIsAnnual(true)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                isAnnual 
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm" 
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Annual Billing
+              <span className="px-1.5 py-0.5 bg-emerald-500/15 text-emerald-500 rounded-md text-[9px] font-black uppercase">
+                Save 20%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {pricing.map((tier, idx) => (
             <div
               key={idx}
-              className={`bg-white dark:bg-card border rounded-3xl p-8 relative flex flex-col justify-between ${
+              className={`bg-white dark:bg-card border rounded-3xl p-6 relative flex flex-col justify-between ${
                 tier.popular
                   ? "border-primary shadow-xl ring-2 ring-primary/10"
-                  : "border-slate-200 dark:border-slate-800 shadow-sm"
+                  : "border-slate-200 dark:border-slate-850 shadow-sm"
               }`}
             >
               {tier.popular && (
@@ -196,20 +246,25 @@ export const LandingPage: React.FC = () => {
                 </span>
               )}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{tier.name}</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{tier.desc}</p>
-                <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{tier.name}</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 min-h-[32px]">{tier.desc}</p>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {tier.price}
                   </span>
                   {tier.period && (
-                    <span className="text-slate-400 text-sm font-semibold">{tier.period}</span>
+                    <span className="text-slate-400 text-xs font-semibold">{tier.period}</span>
                   )}
                 </div>
-                <div className="h-px bg-slate-100 dark:bg-slate-800 my-6" />
-                <ul className="space-y-3.5">
+                {isAnnual && tier.price !== "Custom" && tier.price !== "$0" && (
+                  <p className="text-[9px] text-emerald-500 font-bold mt-1">
+                    Billed annually
+                  </p>
+                )}
+                <div className="h-px bg-slate-100 dark:bg-slate-800 my-5" />
+                <ul className="space-y-3">
                   {tier.features.map((feat, fIdx) => (
-                    <li key={fIdx} className="flex gap-2.5 items-start text-xs text-slate-600 dark:text-slate-455">
+                    <li key={fIdx} className="flex gap-2 items-start text-xs text-slate-655 dark:text-slate-400">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
@@ -217,16 +272,25 @@ export const LandingPage: React.FC = () => {
                 </ul>
               </div>
 
-              <Link
-                to={tier.link}
-                className={`w-full text-center py-3 rounded-xl text-xs font-bold mt-8 shadow-sm transition block cursor-pointer ${
-                  tier.popular
-                    ? "bg-primary hover:bg-primary/95 text-white"
-                    : "border border-slate-200 dark:border-slate-700 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                }`}
-              >
-                {tier.cta}
-              </Link>
+              {tier.price === "Custom" ? (
+                <button
+                  onClick={() => setIsSalesModalOpen(true)}
+                  className="w-full text-center py-2.5 rounded-xl text-xs font-bold mt-6 shadow-sm transition block cursor-pointer border border-slate-205 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300"
+                >
+                  {tier.cta}
+                </button>
+              ) : (
+                <Link
+                  to={tier.link}
+                  className={`w-full text-center py-2.5 rounded-xl text-xs font-bold mt-6 shadow-sm transition block cursor-pointer ${
+                    tier.popular
+                      ? "bg-primary hover:bg-primary/95 text-white"
+                      : "border border-slate-205 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300"
+                  }`}
+                >
+                  {tier.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>
@@ -269,6 +333,7 @@ export const LandingPage: React.FC = () => {
           </button>
         </form>
       </section>
+      <ContactSalesModal isOpen={isSalesModalOpen} onClose={() => setIsSalesModalOpen(false)} />
     </div>
   )
 }

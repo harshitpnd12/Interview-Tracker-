@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { 
   Zap, ChevronLeft, ChevronRight, BarChart2, Briefcase, Calendar, FileText, 
   Sparkles, Bot, Mic, TrendingUp, Target, CheckSquare, 
-  User, Bell, CreditCard, LogOut, Gift 
+  User, Bell, CreditCard, LogOut, Gift, HelpCircle
 } from "lucide-react"
 import { SidebarContext } from "../../context/SidebarContext"
 import { useAuth } from "../../hooks/useAuth"
@@ -49,6 +49,9 @@ export const Sidebar: React.FC = () => {
   
   const tokenPercent = isUnlimited ? 100 : Math.min(100, Math.round((tokensUsed / tokensTotal) * 100))
   const tokensLeft = isUnlimited ? "Unlimited" : tokensTotal - tokensUsed
+  const tokensLeftVal = typeof tokensLeft === "number" ? tokensLeft : 0
+  const remainingPercent = isUnlimited ? 100 : (tokensTotal > 0 ? (tokensLeftVal / tokensTotal) * 100 : 0)
+  const isLowCredits = !isUnlimited && remainingPercent < 20
 
   const navigationGroups: SidebarGroup[] = [
     {
@@ -83,7 +86,8 @@ export const Sidebar: React.FC = () => {
         { name: "Profile", path: "/profile", icon: User },
         { name: "Notifications", path: "/notifications", icon: Bell, badge: unreadCount > 0 ? unreadCount : undefined },
         { name: "Refer & Earn", path: "/referrals", icon: Gift },
-        { name: "Billing", path: "/billing", icon: CreditCard }
+        { name: "Billing", path: "/billing", icon: CreditCard },
+        { name: "Support Hub", path: "/support", icon: HelpCircle }
       ]
     }
   ]
@@ -190,13 +194,13 @@ export const Sidebar: React.FC = () => {
       <div className="border-t border-slate-800 p-4 shrink-0 bg-slate-900/60 backdrop-blur-sm">
         {/* AI Tokens Usage Card */}
         {!isCollapsed && (
-          <div className="mb-4 bg-slate-950/40 border border-slate-850 rounded-xl p-3 text-left">
+          <div className="mb-4 -mt-2.5 bg-slate-950/40 border border-slate-850 rounded-xl p-3 text-left">
             <div className="flex items-center justify-between text-[11px] font-bold">
               <span className="text-slate-400 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-violet-400" />
                 AI Prep Tokens
               </span>
-              <span className="text-white">
+              <span className={cn("text-white", isLowCredits && "text-red-400 font-extrabold")}>
                 {isUnlimited ? "Unlimited" : `${tokensUsed}/${tokensTotal}`}
               </span>
             </div>
@@ -204,21 +208,28 @@ export const Sidebar: React.FC = () => {
               <div
                 className={cn(
                   "h-full rounded-full transition-all duration-500",
-                  isUnlimited ? "bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 animate-pulse" : "bg-indigo-500"
+                  isUnlimited 
+                    ? "bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 animate-pulse" 
+                    : isLowCredits 
+                      ? "bg-gradient-to-r from-red-500 to-rose-500 animate-pulse" 
+                      : "bg-indigo-500"
                 )}
                 style={{ width: `${tokenPercent}%` }}
               />
             </div>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[9px] text-slate-500 font-semibold">
-                {isUnlimited ? "Active Prime Plan" : `${tokensLeft} tokens left`}
+              <span className={cn("text-[9px] font-bold", isLowCredits ? "text-red-400 animate-pulse" : "text-slate-500")}>
+                {isUnlimited ? "Active Prime Plan" : isLowCredits ? "⚠️ Low Credit! Recharge" : `${tokensLeft} tokens left`}
               </span>
               {!isUnlimited && (
                 <NavLink
                   to="/billing/upgrade"
-                  className="text-[9px] font-extrabold text-indigo-400 hover:text-indigo-305 transition"
+                  className={cn(
+                    "text-[9px] font-extrabold transition",
+                    isLowCredits ? "text-red-450 hover:text-red-400" : "text-indigo-400 hover:text-indigo-305"
+                  )}
                 >
-                  Upgrade →
+                  {isLowCredits ? "Recharge →" : "Upgrade →"}
                 </NavLink>
               )}
             </div>

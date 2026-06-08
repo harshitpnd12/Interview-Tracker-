@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { 
@@ -12,6 +12,7 @@ import {
 
 import { useApplications } from "../../hooks/useApplications"
 import { useInterviews } from "../../hooks/useInterviews"
+import { useAuth } from "../../hooks/useAuth"
 import StatsCard from "../../components/shared/StatsCard"
 import Badge from "../../components/shared/Badge"
 import { demoUser, demoGoals } from "../../lib/demo-data"
@@ -19,6 +20,7 @@ import { cn } from "../../lib/utils"
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { stats, statsLoading } = useApplications()
   const { upcomingInterviews, upcomingLoading } = useInterviews()
 
@@ -30,17 +32,39 @@ export const DashboardPage: React.FC = () => {
     return "Good evening"
   }, [])
 
+  const plan = user?.plan || "pro"
+  const tokensUsed = user?.tokensUsed ?? (plan === "free" ? 2 : plan === "pro" ? 42 : plan === "prime" ? 185 : plan === "custom" ? 240 : 42)
+  const tokensTotal = user?.tokensTotal ?? (plan === "free" ? 5 : plan === "pro" ? 100 : plan === "prime" ? 99999 : plan === "custom" ? 1000 : 100)
+  const isUnlimited = plan === "prime"
+  const tokensPercentLeft = isUnlimited ? 100 : (tokensTotal > 0 ? ((tokensTotal - tokensUsed) / tokensTotal) * 100 : 0)
+  const isLowCredits = !isUnlimited && tokensPercentLeft < 20
+
+  // Active range filter: 'weeks' or 'month'
+  const [activityRange, setActivityRange] = useState<"weeks" | "month">("weeks")
+
   // Composed Chart Data (8 Weeks Activity)
   const activityData = [
-    { week: "W1", applied: 2, interviews: 1, rejections: 0 },
-    { week: "W2", applied: 4, interviews: 2, rejections: 1 },
-    { week: "W3", applied: 3, interviews: 1, rejections: 2 },
-    { week: "W4", applied: 6, interviews: 3, rejections: 1 },
-    { week: "W5", applied: 5, interviews: 2, rejections: 3 },
-    { week: "W6", applied: 7, interviews: 4, rejections: 2 },
-    { week: "W7", applied: 4, interviews: 3, rejections: 1 },
-    { week: "W8", applied: 3, interviews: 2, rejections: 1 },
+    { name: "W1", applied: 2, interviews: 1, rejections: 0 },
+    { name: "W2", applied: 4, interviews: 2, rejections: 1 },
+    { name: "W3", applied: 3, interviews: 1, rejections: 2 },
+    { name: "W4", applied: 6, interviews: 3, rejections: 1 },
+    { name: "W5", applied: 5, interviews: 2, rejections: 3 },
+    { name: "W6", applied: 7, interviews: 4, rejections: 2 },
+    { name: "W7", applied: 4, interviews: 3, rejections: 1 },
+    { name: "W8", applied: 3, interviews: 2, rejections: 1 },
   ]
+
+  // Monthly Activity Data
+  const monthlyActivityData = [
+    { name: "Jan", applied: 10, interviews: 4, rejections: 2 },
+    { name: "Feb", applied: 14, interviews: 6, rejections: 5 },
+    { name: "Mar", applied: 18, interviews: 8, rejections: 4 },
+    { name: "Apr", applied: 12, interviews: 5, rejections: 3 },
+    { name: "May", applied: 22, interviews: 11, rejections: 8 },
+    { name: "Jun", applied: 25, interviews: 14, rejections: 9 },
+  ]
+
+  const currentGraphData = activityRange === "weeks" ? activityData : monthlyActivityData
 
   // Pie Chart Data (Donut status breakdown)
   const pieData = [
@@ -94,8 +118,24 @@ export const DashboardPage: React.FC = () => {
       {/* SECTION 1: Greeting + Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            {greeting}, {demoUser.name.split(" ")[0]} 👋
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex flex-wrap items-center gap-2">
+            <span>{greeting}, {user?.name.split(" ")[0] || demoUser.name.split(" ")[0]} 👋</span>
+            <span className={cn(
+              "px-2.5 py-0.5 rounded-full text-xs font-bold border flex items-center gap-1.5 shrink-0 transition-all shadow-sm select-none",
+              isUnlimited 
+                ? "bg-violet-500/10 border-violet-500/20 text-violet-600 dark:text-violet-400"
+                : isLowCredits 
+                  ? "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-450 animate-pulse" 
+                  : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+            )}>
+              <Sparkles className="w-3 h-3 text-violet-500 shrink-0" />
+              <span>AI Prep: {isUnlimited ? "Unlimited" : `${tokensUsed}/${tokensTotal}`}</span>
+              {isLowCredits && (
+                <span className="ml-1 text-[8px] font-black uppercase text-red-500 tracking-wider">
+                  (Low Credits)
+                </span>
+              )}
+            </span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-1">
             Today is {format(new Date(), "eeee, MMMM d, yyyy")} · Let's secure your next role.
@@ -202,13 +242,31 @@ export const DashboardPage: React.FC = () => {
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                 Application Activity
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Overview of last 8 weeks activity</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {activityRange === "weeks" ? "Overview of last 8 weeks activity" : "Overview of monthly activity"}
+              </p>
             </div>
-            <div className="flex gap-1 bg-slate-50 dark:bg-slate-900 p-1 rounded-lg border">
-              <button className="px-2 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-850 shadow-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+            <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+              <button 
+                onClick={() => setActivityRange("weeks")}
+                className={cn(
+                  "px-3 py-1.5 text-[10px] font-extrabold rounded-lg transition-all cursor-pointer",
+                  activityRange === "weeks" 
+                    ? "bg-indigo-600 text-white shadow-sm" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800"
+                )}
+              >
                 8 Weeks
               </button>
-              <button className="px-2 py-1 text-[10px] font-bold rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+              <button 
+                onClick={() => setActivityRange("month")}
+                className={cn(
+                  "px-3 py-1.5 text-[10px] font-extrabold rounded-lg transition-all cursor-pointer",
+                  activityRange === "month" 
+                    ? "bg-indigo-600 text-white shadow-sm" 
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800"
+                )}
+              >
                 Month
               </button>
             </div>
@@ -216,7 +274,7 @@ export const DashboardPage: React.FC = () => {
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={activityData} margin={{ top: 10, right: -5, left: -25, bottom: 0 }}>
+              <ComposedChart data={currentGraphData} margin={{ top: 10, right: -5, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="appliedColor" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
@@ -227,15 +285,15 @@ export const DashboardPage: React.FC = () => {
                     <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-100 dark:stroke-slate-800" />
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-150 dark:stroke-slate-800" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: "#0f172a", border: "none", borderRadius: "12px", color: "#fff" }}
                   labelStyle={{ fontWeight: "bold", fontSize: 11, color: "#cbd5e1" }}
                   itemStyle={{ fontSize: 11 }}
                 />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: 10, paddingTop: 10 }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 10, paddingTop: 10, color: "#64748b" }} />
                 <Area type="monotone" name="Rejections" dataKey="rejections" fill="url(#rejectionColor)" stroke="#f43f5e" strokeWidth={1} />
                 <Bar name="Apps Submitted" dataKey="applied" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={16} />
                 <Line type="monotone" name="Interviews Recd" dataKey="interviews" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />

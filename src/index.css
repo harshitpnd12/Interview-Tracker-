@@ -6,9 +6,9 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;        /* slate-50 HSL */
+    --background: 210 20% 94%;        /* Softer light slate background */
     --foreground: 222 47% 11%;        /* slate-900 HSL */
-    --card: 0 0% 100%;                /* white HSL */
+    --card: 210 20% 97.5%;            /* Softer off-white card surface */
     --card-foreground: 222 47% 11%;
     --primary: 243 75% 59%;           /* indigo-600 HSL - vibrant & high contrast */
     --primary-foreground: 0 0% 100%;
